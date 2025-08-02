@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".", // <– quan trọng
+    "paths": {
+      "@/*": [
+        "src/*"
+      ] // alias "@/..." trỏ tới thư mục src
+    }
+  },
+  "include": [
+    "src"
+  ]
+}
