@@ -7,29 +7,40 @@ import ModalAddWork from '../button/ModalAddWork'
 import ModalDeleteWork from '../button/ModalDeleteWork'
 import FilterMobile from '../button/FilterMobile'
 import { WorkContext } from '../WorkProvider';
+import { useDebounce } from 'react-use';
 
 
 
 
 function MainContent() {
     const { taskCount } = useContext(WorkContext)
+
     const [lists, setLists] = useState([])
     const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState(null)
+    const [errorMessage, setErrorMessage] = useState(null)
     const [selectedIds, setSelectedIds] = useState([])
+
     const [page, setPage] = useState(1)
     const [limit, setLimit] = useState(10)
     const [search, setSearch] = useState('')
+
+    //optimize search
+    const [debounceSearchItem, setDebounceSearchItem] = useState('')
+    useDebounce(() => setDebounceSearchItem(search), 500, [search])
+
     const [editModalOpen, setEditModalOpen] = useState(null)
     const [deleteModalOpen, setDeleteModalOpen] = useState(null)
     const [addModalOpen, setAddModalOpen] = useState(false);
     const [isShow, setIsShow] = useState(false); // sidebar mobile
+
+
     const totalPage = Math.ceil(taskCount / limit)
+
     const [showDropdown, setShowDropdown] = useState({
         view: false,
         status: false,
         priory: false
-    });
+    }); //dropdown view
     const [view, setView] = useState({
         title: true,
         status: true,
@@ -55,11 +66,11 @@ function MainContent() {
     const [filterStatus, setFilterStatus] = useState()
     const [filterPriory, setFilterPriory] = useState()
     const [sort, setSort] = useState({
-        sortBy: '', // Sắp xếp mặc định theo...
-        order: 'desc' // Sắp xếp giảm dần
+        sortBy: '',
+        order: 'desc'
     });
 
-    const fetchWorkLists = async (page, limit, search, filterStatus, filterPriory) => {
+    const fetchWorkLists = async (page, limit, query, filterStatus, filterPriory) => {
         let url = `${import.meta.env.VITE_API_URL}/tasks?page=${page}&limit=${limit}`
         if (filterStatus) {
             url += `&status=${filterStatus}`
@@ -67,8 +78,8 @@ function MainContent() {
         if (filterPriory) {
             url += `&priory=${filterPriory}`
         }
-        if (search) {
-            url += `&search=${search}`
+        if (query) {
+            url += `&search=${encodeURIComponent(query)}` // encodeURIComponent ensure that special characters are handled correctly
         }
         if (sort.sortBy) {
             url += `&sortBy=${sort.sortBy}&order=${sort.order}`
@@ -82,14 +93,17 @@ function MainContent() {
                     'Content-type': 'Application/json'
                 }
             })
-            if (res.ok) {
-                const data = await res.json()
-                setLists(data)
-            } else {
-                setError('Không có nhiệm vụ phù hợp')
+            if (!res.ok) {
+                setErrorMessage('Không có nhiệm vụ phù hợp')
             }
+
+            const data = await res.json()
+            setLists(data || [])
+
+
         } catch (error) {
-            setError('Xảy ra lỗi khi tải dữ liệu: ', error)
+            console.log(error);
+            setErrorMessage('Xảy ra lỗi khi tải dữ liệu: ', error.message)
         } finally {
             setIsLoading(false)
         }
@@ -369,9 +383,9 @@ function MainContent() {
 
 
     useEffect(() => {
-        setError(null);
-        fetchWorkLists(page, limit, search, filterStatus, filterPriory)
-    }, [limit, page, search, filterPriory, filterStatus, sort])
+        setErrorMessage(null);
+        fetchWorkLists(page, limit, debounceSearchItem, filterStatus, filterPriory)
+    }, [limit, page, debounceSearchItem, filterPriory, filterStatus, sort])
 
     return (
         <>
@@ -557,10 +571,10 @@ function MainContent() {
 
                         {/* task card */}
                         <ReactSortable list={lists} setList={setLists} animation={300} handle=".handle" >
-                            {error ? (
+                            {errorMessage ? (
                                 <div className='flex items-center flex-col gap-3 justify-center mb-3'>
                                     <img src="https://todoist.b-cdn.net/assets/images/97af9e3cd96a74b2.png" alt="" />
-                                    <p className='font-semibold text-red-600'>{error}</p>
+                                    <p className='font-semibold text-red-600'>{errorMessage}</p>
                                 </div>
                             ) : (
                                 !isLoading && lists ? lists.map((list) => (
