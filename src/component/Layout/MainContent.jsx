@@ -8,6 +8,7 @@ import ModalDeleteWork from '../button/ModalDeleteWork'
 import FilterMobile from '../button/FilterMobile'
 import { WorkContext } from '../WorkProvider';
 import { useDebounce } from 'react-use';
+import Alert from '../button/Alert';
 
 
 
@@ -572,12 +573,9 @@ function MainContent() {
                         {/* task card */}
                         <ReactSortable list={lists} setList={setLists} animation={300} handle=".handle" >
                             {errorMessage ? (
-                                <div className='flex items-center flex-col gap-3 justify-center mb-3'>
-                                    <img src="https://todoist.b-cdn.net/assets/images/97af9e3cd96a74b2.png" alt="" />
-                                    <p className='font-semibold text-red-600'>{errorMessage}</p>
-                                </div>
+                                <Alert errorMessage={errorMessage} />
                             ) : (
-                                !isLoading && lists ? lists.map((list) => (
+                                !isLoading ? lists.map((list) => (
                                     <div
                                         className='border group border-gray-200 rounded-lg shadow p-2 px-4 mb-4 hover:scale-102 hover:bg-orange-50'
                                         key={list.id}
@@ -714,7 +712,7 @@ function MainContent() {
                     </>
                 ) : (
                     <div className='flex items-center flex-col gap-2 justify-center'>
-                        <img src="https://todoist.b-cdn.net/assets/images/97af9e3cd96a74b2.png" alt="" />
+                        <img src="failed.png" alt="" />
                         <p className='font-bold'>Chào mừng bạn</p>
                         <p className='text-gray-500'>Hiện bạn chưa có nhiệm vụ nào</p>
                         <button
