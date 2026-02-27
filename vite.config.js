@@ -8,6 +8,6 @@ export default defineConfig({
   server: {
     host: true, // Cho phép từ bất kỳ địa chỉ IP nào
     port: 5173,
-    allowedHosts: ['aac0cdf25fe1.ngrok-free.app'],
   },
+  base: '/to_do_tasks/',
 })
